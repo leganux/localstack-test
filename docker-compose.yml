@@ -1,0 +1,30 @@
+services:
+  localstack:
+    container_name: localstack
+    image: localstack/localstack:latest
+    ports:
+      - "4566:4566"            # LocalStack Edge Port
+      - "4510-4559:4510-4559"  # external services port range
+    environment:
+      - DEBUG=1
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - HOSTNAME_EXTERNAL=localstack
+      - SERVICES=s3,ses,secretsmanager,apigateway,lambda,dynamodb,sqs,sns
+      - DEFAULT_REGION=us-east-1
+      - AWS_DEFAULT_REGION=us-east-1
+      - EDGE_PORT=4566
+      - PERSISTENCE=1
+      - DATA_DIR=/tmp/localstack/data
+      - LAMBDA_EXECUTOR=docker
+      - LAMBDA_REMOTE_DOCKER=false
+      - START_WEB=1
+    volumes:
+      - "${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "./init-aws.sh:/docker-entrypoint-initaws.d/init-aws.sh"  # initialization script
+    networks:
+      - localstack-network
+
+networks:
+  localstack-network:
+    driver: bridge
